@@ -1,4 +1,4 @@
-# onedrive-fuse-layered
+# shale-onedrive
 
 > 🚧 **This is a work in progress...** 🚧
 
@@ -16,8 +16,8 @@ Then, create two empty directories to mount two layers of storage:
 
 ```sh
 mkdir -p ~/onedrive-working/{upper,lower}
-onedrive-fuse-layered mount --lower ~/onedrive-working/lower
-onedrive-fuse-layered mount --upper ~/onedrive-working/upper
+shale mount --lower ~/onedrive-working/lower
+shale mount --upper ~/onedrive-working/upper
 ```
 
 After that, combine the two filesystems using overlayfs (require kernel module `overlay` if you decide to compile your own kernel):
@@ -36,7 +36,7 @@ This setup gives you an advantage:
 
 ### Unmount the filesystem
 
-To unmount the file system, **DO NOT** kill the `onedrive-fuse-layered` instance, as this can very possibly cause data loss.
+To unmount the file system, **DO NOT** kill the `shale` instance, as this can very possibly cause data loss.
 
 If you are using the simple setup, simply `fusermount -u` the OneDrive directory.
 
