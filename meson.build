@@ -1,12 +1,8 @@
 project('onedrive-fuse-layered', 'cpp')
 
-cmake = import('cmake')
-
-libcpr_subproject = cmake.subproject('cpr')
-
 boostdep = dependency('boost', modules : ['program_options'])
 fusedep = dependency('fuse3')
-cprdep = libcpr_subproject.dependency('cpr')
+cprdep = dependency('cpr')
 
 deplist = [boostdep, fusedep, cprdep]
 
