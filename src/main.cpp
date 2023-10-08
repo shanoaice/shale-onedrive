@@ -1,11 +1,14 @@
 #include <iostream>
 #include <string>
 #include <boost/program_options.hpp>
+#include <boost/asio.hpp>
 
 namespace po = boost::program_options;
 
 int main(int argc, char* argv[])
 {
+    boost::asio::io_context io_context;
+
     po::options_description desc("allowed options");
     desc.add_options()
         ("help", "produce help message")
