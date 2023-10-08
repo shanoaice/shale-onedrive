@@ -6,4 +6,6 @@ cprdep = dependency('cpr')
 
 deplist = [boostdep, fusedep, cprdep]
 
-executable('shale', 'src/main.cpp', dependencies : deplist)
+sources = ['src/main.cpp', 'src/auth.cpp', 'src/constants.h']
+
+executable('shale', sources, dependencies : deplist)
