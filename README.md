@@ -8,6 +8,17 @@ Mount your Microsoft OneDrive Storage as a FUSE filesystem (with layering that p
 
 ### AUR
 
+### Build from Source
+
+#### Prerequsites
+- meson
+- iddawc
+- boost
+- simdjson(*)
+- cpr(*)
+
+(*) optional, will be downloaded by Meson if not installed on local machine
+
 ## Usage
 
 > _Obtain Credentials (WIP)_
