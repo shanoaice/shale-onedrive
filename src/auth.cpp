@@ -27,6 +27,7 @@ namespace shale::auth
         string access_token;
         string refresh_token;
         std::chrono::time_point<std::chrono::system_clock> expires;
+        string base_url;
 
     public:
         graph_token() {}
@@ -61,6 +62,7 @@ namespace shale::auth
                 auth_url = base_url + auth_url_suffix;
                 break;
             }
+            this->base_url = base_url;
             std::cout << "Authorize this app visiting:\n\n"
                       << auth_url << "\n\nEnter the response URI: " << std::endl;
 
@@ -111,6 +113,33 @@ namespace shale::auth
             this->refresh_token = token_response["refresh_token"].get<string>();
             // calculate the expiration time to be checked when calling get_token();
             this->expires = time_now + std::chrono::seconds(expires_in);
+        }
+        std::string_view get_token() {
+            auto time_now = std::chrono::system_clock::now();
+            // check if the token has expired
+            // if not, return the string_view of the token directly
+            if (this->expires > time_now) {
+                return std::string_view{this->access_token};
+            }
+            // if it has expired, call api to renew the token
+            string refresh_url = this->base_url + "/oauth2/v2.0/token";
+            cpr::Response token_r = cpr::Post(cpr::Url{refresh_url},
+                                              cpr::Payload{
+                                                {"client_id", APP_CLIENT_ID},
+                                                {"grant_type", "refresh_token"},
+                                                {"refresh_token", this->refresh_token}});
+            string token_response_plain = std::move(token_r.text);
+            token_response_plain.reserve(simdjson::SIMDJSON_PADDING);
+            simdjson::ondemand::parser json_parser;
+            // parse the response
+            simdjson::ondemand::document token_response = json_parser.iterate(token_response_plain);
+
+            this->access_token = token_response["access_token"].get<string>();
+            int64_t expires_in = token_response["expires_in"].get<int64_t>();
+            this->expires = time_now + std::chrono::seconds(expires_in);
+            this->refresh_token = token_response["refresh_token"].get<string>();
+
+            return std::string_view{this->access_token};
         }
     };
 }
