@@ -37,6 +37,7 @@ namespace shale::auth
             auto base_url_template = boost::format("%1/%2");
             auto auth_url_suffix = (boost::format("/oauth2/v2.0/authorize?clientid=%1&response_type=code&scope=%2&redirect_uri=%3") % APP_CLIENT_ID % app_permission % redirect_url).str();
             string base_url, auth_url;
+            // construct auth url that user visits to grant access to their account
             switch (endpoint)
             {
             case Common:
@@ -68,6 +69,8 @@ namespace shale::auth
 
             auto response_uri_parsed_result = boost::urls::parse_uri(response_uri);
 
+            // if url parsing fails, e.g. if user made an error copying/pasting the response URI
+            // keep re-asking the user for a correct response URI instead of bailing out
             while (response_uri_parsed_result.has_error())
             {
                 std::cout << "Cannot parse entered response URI,\nPlease enter again: " << std::flush;
@@ -75,6 +78,7 @@ namespace shale::auth
                 response_uri_parsed_result = boost::urls::parse_uri(response_uri);
             }
 
+            // obtain the auth code from the response URI
             string code;
             for (auto param : response_uri_parsed_result.value().params())
             {
@@ -87,6 +91,7 @@ namespace shale::auth
 
             auto time_now = std::chrono::system_clock::now();
             string token_url = base_url + "/oauth2/v2.0/token";
+            // call api to get the access token
             cpr::Response token_r = cpr::Post(cpr::Url{token_url},
                                               cpr::Payload{
                                                 {"client_id", APP_CLIENT_ID},
@@ -97,12 +102,14 @@ namespace shale::auth
             string token_response_plain = std::move(token_r.text);
             token_response_plain.reserve(simdjson::SIMDJSON_PADDING);
             simdjson::ondemand::parser json_parser;
+            // parse the response
             simdjson::ondemand::document token_response = json_parser.iterate(token_response_plain);
 
             int64_t expires_in = token_response["expires_in"].get<int64_t>();
 
             this->access_token = token_response["access_token"].get<string>();
             this->refresh_token = token_response["refresh_token"].get<string>();
+            // calculate the expiration time to be checked when calling get_token();
             this->expires = time_now + std::chrono::seconds(expires_in);
         }
     };
