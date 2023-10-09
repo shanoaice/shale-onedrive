@@ -1,6 +1,7 @@
 #include <string>
 #include <chrono>
 #include <iostream>
+
 #include <boost/format.hpp>
 #include <boost/url.hpp>
 #include "cpr/cpr.h"
@@ -27,7 +28,7 @@ namespace shale::auth
     private:
         string access_token;
         string refresh_token;
-        string scope{cpr::util::urlEncode("User.Read Files.ReadWrite offline_access")};
+        string scope{cpr::util::urlEncode("User.Read Files.ReadWrite.All offline_access")};
         std::chrono::time_point<std::chrono::system_clock> access_token_expiry_time;
         std::chrono::time_point<std::chrono::system_clock> refresh_token_expiry_time;
         string base_url;
