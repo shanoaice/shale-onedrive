@@ -179,5 +179,26 @@ namespace shale::auth
 
             return exported_session_json;
         }
+        void restore_session(string session_data)
+        {
+            simdjson::ondemand::parser parser;
+            simdjson::ondemand::document session_doc = parser.iterate(session_data);
+
+            base_url = string(session_doc["base_url"].get_string().value());
+            int64_t refresh_token_expiry = session_doc["refresh_token_expiry"].get_int64();
+            refresh_token_expiry_time = std::chrono::system_clock::time_point(std::chrono::seconds(refresh_token_expiry));
+
+            auto time_now = std::chrono::system_clock::now();
+            if (refresh_token_expiry_time < time_now)
+            {
+                std::cout << "Session expired, please re-authorize the app" << std::endl;
+                authorize_app(time_now);
+            }
+            else
+            {
+                refresh_token = string(session_doc["refresh_token"].get_string().value());
+                renew_token(time_now);
+            }
+        }
     };
 }
