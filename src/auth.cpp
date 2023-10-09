@@ -162,5 +162,22 @@ namespace shale::auth
 
             return std::string_view{this->access_token};
         }
+        std::string export_session()
+        {
+            yyjson_mut_doc *doc = yyjson_mut_doc_new(NULL);
+            yyjson_mut_val *root = yyjson_mut_obj(doc);
+            yyjson_mut_doc_set_root(doc, root);
+
+            yyjson_mut_obj_add_str(doc, root, "refresh_token", this->refresh_token.c_str());
+            yyjson_mut_obj_add_str(doc, root, "base_url", this->base_url.c_str());
+            auto refresh_token_expiry_since_epoch = std::chrono::duration_cast<std::chrono::seconds>(this->refresh_token_expiry_time.time_since_epoch()).count();
+            yyjson_mut_obj_add_int(doc, root, "refresh_token_expiry", refresh_token_expiry_since_epoch);
+
+            string exported_session_json{yyjson_mut_write(doc, YYJSON_WRITE_PRETTY | YYJSON_WRITE_ESCAPE_UNICODE, NULL)};
+
+            yyjson_mut_doc_free(doc);
+
+            return exported_session_json;
+        }
     };
 }
