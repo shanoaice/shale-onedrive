@@ -26,46 +26,21 @@ namespace shale::auth
     private:
         string access_token;
         string refresh_token;
+        string scope{cpr::util::urlEncode("User.Read Files.ReadWrite offline_access")};
         std::chrono::time_point<std::chrono::system_clock> access_token_expiry_time;
         std::chrono::time_point<std::chrono::system_clock> refresh_token_expiry_time;
         string base_url;
+        string auth_url_suffix;
+        string redirect_url{cpr::util::urlEncode("https://login.microsoftonline.com/common/oauth2/nativeclient")};
 
     public:
-        graph_token() {}
-        graph_token(graph_endpoint endpoint, string tenant)
+        graph_token() {
+            auth_url_suffix = (boost::format("/oauth2/v2.0/authorize?clientid=%1&response_type=code&scope=%2&redirect_uri=%3") % APP_CLIENT_ID % scope % redirect_url).str();
+        }
+        void authorize_app()
         {
-            string app_permission = cpr::util::urlEncode("User.Read Files.ReadWrite offline_access");
-            string redirect_url = cpr::util::urlEncode("https://login.microsoftonline.com/common/oauth2/nativeclient");
-            auto base_url_template = boost::format("%1/%2");
-            auto auth_url_suffix = (boost::format("/oauth2/v2.0/authorize?clientid=%1&response_type=code&scope=%2&redirect_uri=%3") % APP_CLIENT_ID % app_permission % redirect_url).str();
-            string base_url, auth_url;
-            // construct auth url that user visits to grant access to their account
-            switch (endpoint)
-            {
-            case Common:
-                base_url = (base_url_template % GLOBAL_GRAPH_ENDPOINT % tenant).str();
-                auth_url = base_url + auth_url_suffix;
-                break;
-            case US_L4:
-                base_url = (base_url_template % US_L4_GRAPH_ENDPOINT % tenant).str();
-                auth_url = base_url + auth_url_suffix;
-                break;
-            case US_L5:
-                base_url = (base_url_template % US_L5_GRAPH_ENDPOINT % tenant).str();
-                auth_url = base_url + auth_url_suffix;
-                break;
-            case DE:
-                base_url = (base_url_template % DE_GRAPH_ENDPOINT % tenant).str();
-                auth_url = base_url + auth_url_suffix;
-                break;
-            case CN:
-                base_url = (base_url_template % CN_GRAPH_ENDPOINT % tenant).str();
-                auth_url = base_url + auth_url_suffix;
-                break;
-            }
-            this->base_url = base_url;
             std::cout << "Authorize this app visiting:\n\n"
-                      << auth_url << "\n\nEnter the response URI: " << std::endl;
+                      << base_url + auth_url_suffix << "\n\nEnter the response URI: " << std::endl;
 
             string response_uri;
             std::cin >> response_uri;
@@ -100,7 +75,7 @@ namespace shale::auth
                                                   {"client_id", APP_CLIENT_ID},
                                                   {"code", code},
                                                   {"grant_type", "authorization_code"},
-                                                  {"scope", app_permission},
+                                                  {"scope", scope},
                                                   {"redirect_uri", redirect_url}});
             string token_response_plain = std::move(token_r.text);
             token_response_plain.reserve(simdjson::SIMDJSON_PADDING);
@@ -115,6 +90,41 @@ namespace shale::auth
             // calculate the expiration time to be checked when calling get_token();
             this->access_token_expiry_time = time_now + std::chrono::seconds(expires_in);
             this->refresh_token_expiry_time = time_now + std::chrono::days(90);
+        }
+        graph_token(graph_endpoint endpoint, string tenant)
+        {
+            string app_permission = cpr::util::urlEncode("User.Read Files.ReadWrite offline_access");
+            string redirect_url = cpr::util::urlEncode("https://login.microsoftonline.com/common/oauth2/nativeclient");
+            auto base_url_template = boost::format("%1/%2");
+            auto auth_url_suffix = (boost::format("/oauth2/v2.0/authorize?clientid=%1&response_type=code&scope=%2&redirect_uri=%3") % APP_CLIENT_ID % app_permission % redirect_url).str();
+            string base_url, auth_url;
+            // construct auth url that user visits to grant access to their account
+            switch (endpoint)
+            {
+            case Common:
+                base_url = (base_url_template % GLOBAL_GRAPH_ENDPOINT % tenant).str();
+                auth_url = base_url + auth_url_suffix;
+                break;
+            case US_L4:
+                base_url = (base_url_template % US_L4_GRAPH_ENDPOINT % tenant).str();
+                auth_url = base_url + auth_url_suffix;
+                break;
+            case US_L5:
+                base_url = (base_url_template % US_L5_GRAPH_ENDPOINT % tenant).str();
+                auth_url = base_url + auth_url_suffix;
+                break;
+            case DE:
+                base_url = (base_url_template % DE_GRAPH_ENDPOINT % tenant).str();
+                auth_url = base_url + auth_url_suffix;
+                break;
+            case CN:
+                base_url = (base_url_template % CN_GRAPH_ENDPOINT % tenant).str();
+                auth_url = base_url + auth_url_suffix;
+                break;
+            }
+            this->base_url = base_url;
+
+            authorize_app();
         }
         std::string_view get_token()
         {
