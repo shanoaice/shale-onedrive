@@ -3,8 +3,9 @@
 #include <iostream>
 #include <boost/format.hpp>
 #include <boost/url.hpp>
-#include <cpr/cpr.h>
+#include "cpr/cpr.h"
 #include "simdjson.h"
+#include "yyjson.h"
 
 #include "constants.h"
 
@@ -34,10 +35,11 @@ namespace shale::auth
         string redirect_url{cpr::util::urlEncode("https://login.microsoftonline.com/common/oauth2/nativeclient")};
 
     public:
-        graph_token() {
+        graph_token()
+        {
             auth_url_suffix = (boost::format("/oauth2/v2.0/authorize?clientid=%1&response_type=code&scope=%2&redirect_uri=%3") % APP_CLIENT_ID % scope % redirect_url).str();
         }
-        void authorize_app()
+        void authorize_app(std::chrono::system_clock::time_point now)
         {
             std::cout << "Authorize this app visiting:\n\n"
                       << base_url + auth_url_suffix << "\n\nEnter the response URI: " << std::endl;
@@ -67,7 +69,7 @@ namespace shale::auth
                 }
             }
 
-            auto time_now = std::chrono::system_clock::now();
+            auto time_now = now;
             string token_url = base_url + "/oauth2/v2.0/token";
             // call api to get the access token
             cpr::Response token_r = cpr::Post(cpr::Url{token_url},
@@ -124,18 +126,10 @@ namespace shale::auth
             }
             this->base_url = base_url;
 
-            authorize_app();
+            authorize_app(std::chrono::system_clock::now());
         }
-        std::string_view get_token()
+        void renew_token(std::chrono::system_clock::time_point now)
         {
-            auto time_now = std::chrono::system_clock::now();
-            // check if the token has expired
-            // if not, return the string_view of the token directly
-            if (this->access_token_expiry_time > time_now)
-            {
-                return std::string_view{this->access_token};
-            }
-            // if it has expired, call api to renew the token
             string refresh_url = this->base_url + "/oauth2/v2.0/token";
             cpr::Response token_r = cpr::Post(cpr::Url{refresh_url},
                                               cpr::Payload{
@@ -150,9 +144,21 @@ namespace shale::auth
 
             this->access_token = string(token_response["access_token"].get_string().value());
             int64_t expires_in = token_response["expires_in"].get_int64();
-            this->access_token_expiry_time = time_now + std::chrono::seconds(expires_in);
+            this->access_token_expiry_time = now + std::chrono::seconds(expires_in);
             this->refresh_token = string(token_response["refresh_token"].get_string().value());
-            this->refresh_token_expiry_time = time_now + std::chrono::days(90);
+            this->refresh_token_expiry_time = now + std::chrono::days(90);
+        }
+        std::string_view get_token()
+        {
+            auto time_now = std::chrono::system_clock::now();
+            // check if the token has expired
+            // if not, return the string_view of the token directly
+            if (this->access_token_expiry_time > time_now)
+            {
+                return std::string_view{this->access_token};
+            }
+            // if it has expired, call api to renew the token
+            renew_token(time_now);
 
             return std::string_view{this->access_token};
         }
