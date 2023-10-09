@@ -1,0 +1,5 @@
+[wrap-file]
+directory = yyjson-0.8.0
+source_url = https://github.com/ibireme/yyjson/archive/0.8.0.tar.gz
+source_filename = yyjson-0.8.0.tar.gz
+source_hash = b2e39ac4c65f9050820c6779e6f7dd3c0d3fed9c6667f91caec0badbedce00f3
