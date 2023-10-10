@@ -14,6 +14,6 @@ sdbus_cppdep = sdbus_cpp_sub.dependency('sdbus-c++')
 
 deplist = [boostdep, fusedep, cprdep, simdjsondep, yyjsondep, sdbus_cppdep]
 
-sources = ['src/main.cpp', 'src/auth.cpp', 'src/constants.h']
+sources = ['src/main.cpp', 'src/auth.hpp', 'src/constants.h']
 
 executable('shale', sources, dependencies: deplist)
