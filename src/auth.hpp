@@ -92,7 +92,7 @@ public:
         time_now + std::chrono::seconds(expires_in);
     this->refresh_token_expiry_time = time_now + std::chrono::days(90);
   }
-  graph_token(graph_endpoint endpoint, string tenant) {
+  void init(graph_endpoint endpoint, string tenant) {
     string app_permission =
         cpr::util::urlEncode("User.Read Files.ReadWrite offline_access");
     string redirect_url = cpr::util::urlEncode(
