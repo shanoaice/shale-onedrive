@@ -3,6 +3,8 @@
 #include <iostream>
 #include <string>
 
+#define FUSE_USE_VERSION 35
+
 namespace po = boost::program_options;
 
 int main(int argc, char *argv[]) {
