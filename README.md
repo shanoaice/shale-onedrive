@@ -12,8 +12,9 @@ Mount your Microsoft OneDrive Storage as a FUSE filesystem (with layering that p
 
 #### Prerequsites
 - C++ compiler with C++20 support
-- meson
+- meson **and** CMake
 - boost
+- mimalloc
 - simdjson(*)
 - cpr(*)
 - yyjson(*)
