@@ -2,6 +2,8 @@
 
 typedef std::string string;
 
+namespace shale::constants {
+
 // Microsoft Entra Client / Application ID
 const string APP_CLIENT_ID = "50855311-bbcd-4690-9fef-9101ee992964";
 
@@ -19,3 +21,4 @@ const string DE_GRAPH_ENDPOINT = "https://graph.microsoft.de";
 
 const string CN_AUTH_ENDPOINT = "https://login.chinacloudapi.cn";
 const string CN_GRAPH_ENDPOINT = "https://microsoftgraph.chinacloudapi.cn";
+} // namespace shale::constants

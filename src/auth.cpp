@@ -2,13 +2,15 @@
 #include <iostream>
 #include <string>
 
+#include <boost/format.hpp>
+#include <boost/url.hpp>
 #include "cpr/cpr.h"
 #include "simdjson.h"
 #include "yyjson.h"
-#include <boost/format.hpp>
-#include <boost/url.hpp>
 
 #include "constants.h"
+
+using namespace shale::constants;
 
 typedef std::string string;
 
@@ -97,12 +99,13 @@ public:
         cpr::util::urlEncode("User.Read Files.ReadWrite offline_access");
     string redirect_url = cpr::util::urlEncode(
         "https://login.microsoftonline.com/common/oauth2/nativeclient");
-    auto base_url_template = boost::format("%1/%2");
-    auto auth_url_suffix = (boost::format("/oauth2/v2.0/"
-                                          "authorize?clientid=%1&response_type="
-                                          "code&scope=%2&redirect_uri=%3") %
-                            APP_CLIENT_ID % app_permission % redirect_url)
-                               .str();
+    boost::format base_url_template = boost::format("%1/%2");
+    string auth_url_suffix =
+        (boost::format("/oauth2/v2.0/"
+                       "authorize?clientid=%1&response_type="
+                       "code&scope=%2&redirect_uri=%3") %
+         APP_CLIENT_ID % app_permission % redirect_url)
+            .str();
     string base_url, auth_url;
     // construct auth url that user visits to grant access to their account
     switch (endpoint) {
