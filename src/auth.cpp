@@ -10,8 +10,6 @@
 
 #include "constants.h"
 
-using namespace shale::constants;
-
 typedef std::string string;
 
 namespace shale::auth {

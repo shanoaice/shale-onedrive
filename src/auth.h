@@ -1,6 +1,10 @@
+#pragma once
+
 #include <chrono>
 #include <string>
 
+#ifndef SHALE_AUTH
+#define SHALE_AUTH
 namespace shale::auth {
 enum graph_endpoint { Common, US_L4, US_L5, DE, CN };
 
@@ -25,3 +29,4 @@ public:
   void restore_session(std::string session_data);
 };
 } // namespace shale::auth
+#endif
