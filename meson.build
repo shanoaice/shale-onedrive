@@ -38,10 +38,7 @@ deplist = [
 ]
 
 sources = [
-    'src/constants.h',
-    'src/auth.h',
     'src/auth.cpp',
-    'src/onedrive.h',
     'src/onedrive.cpp',
     'src/main.cpp',
 ]
